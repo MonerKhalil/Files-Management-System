@@ -1,0 +1,30 @@
+<?php
+
+namespace {{namespace-File}};
+
+use {{namespace-ModelIRepository}};
+use {{namespace-ModelViewFields}};
+use {{namespace-Actions}};
+use {{namespace-Model}};
+use {{namespace-BaseRepository}};
+use {{namespace-BaseViewFields}};
+use {{namespace-BaseActions}};
+
+class {{-model-}}Repository extends BaseRepository implements I{{-model-}}Repository
+{
+    public function model(){
+        return {{-model-}}::class;
+    }
+
+    public function queryModel(){
+        return {{-model-}}::query();
+    }
+
+    public function viewFields():BaseViewFields{
+        return new {{-model-}}ViewFields($this);
+    }
+
+    public function actions():CrudActions{
+        return new {{-model-}}Action($this);
+    }
+}

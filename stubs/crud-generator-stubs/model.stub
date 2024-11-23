@@ -1,0 +1,10 @@
+<?php
+
+namespace {{namespace-File}};
+
+use {{namespace-BaseModel}};
+
+class {{-model-}} extends BaseModel
+{
+    #-Relations-Functions-------
+}

@@ -1,0 +1,17 @@
+<?php
+
+namespace {{namespace-File}};
+
+use {{namespace-BaseCrudActions}};
+use {{namespace-Controller}};
+
+class {{-model-}}Action extends CrudActions
+{
+    protected function handle():void{
+        #code...
+    }
+
+    protected function controller():string{
+        return {{-model-}}Controller::class;
+    }
+}
