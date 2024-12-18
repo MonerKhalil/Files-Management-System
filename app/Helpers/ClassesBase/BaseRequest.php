@@ -7,6 +7,7 @@ use App\Rules\FileMediaRule;
 use App\Rules\PhoneRule;
 use App\Rules\TextRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
 
 class BaseRequest extends FormRequest
@@ -36,30 +37,32 @@ class BaseRequest extends FormRequest
 
     /**
      * @param bool $isRequired
-     * @param bool $withIcon
-     * @param bool $canIdMediaManager
+     * @param array|null $extension
+     * @param int|null $size
      * @return array
      * @author moner khalil
      */
-    public function imageRule(bool $isRequired = true, bool $withIcon = false, bool $canIdMediaManager = true): array
+    public function imageRule(bool $isRequired = true,?array $extension = null,?int $size = null): array
     {
-        $rule = $isRequired ? 'required' : 'nullable';
-        $exs = MyApp::Classes()->fileProcess->getExImages(true);
-        if ($withIcon){
-            $exs[] = "icon";
-        }
-        return [$rule,new FileMediaRule($exs,MyApp::Classes()->fileProcess->getSizeImages(),$canIdMediaManager)];
+        $extension ??= MyApp::Classes()->fileProcess->getExImages(true);
+        $size ??= MyApp::Classes()->fileProcess->getSizeImages();
+        return $this->fileRule($isRequired,$extension,$size);
     }
 
     /**
      * @param bool $isRequired
-     * @param bool $canIdMediaManager
+     * @param array|null $extension
+     * @param int|null $size
      * @return array
      * @author moner khalil
      */
-    public function fileRule(bool $isRequired = true, bool $canIdMediaManager = true): array
+    public function fileRule(bool $isRequired = true,?array $extension = null,?int $size = null): array
     {
-        return [$isRequired ? 'required' : 'nullable',new FileMediaRule(MyApp::Classes()->fileProcess->getExFiles(true), MyApp::Classes()->fileProcess->getSizeFiles(),$canIdMediaManager)];
+        $rule = $isRequired ? [$this->isUpdatedRequest() ? 'sometimes':'required'] : ['nullable'];
+        $extension ??= MyApp::Classes()->fileProcess->getExFiles(true);
+        $size ??= MyApp::Classes()->fileProcess->getSizeFiles();
+        $rule[] = new FileMediaRule($extension,$size);
+        return $rule;
     }
 
     /**
@@ -184,6 +187,7 @@ class BaseRequest extends FormRequest
 
     /**
      * @param bool $isRequired
+     * @param bool $withConfirmed
      * @return string[]
      */
     public function passwordRule(bool $isRequired = true,bool $withConfirmed = true): array{
@@ -202,9 +206,21 @@ class BaseRequest extends FormRequest
         return $rules;
     }
 
-    public static function urlIsApi(bool $withAjax = true): mixed
-    {
+    public function unique($table,$name,$id = null){
+        $rule = Rule::unique($table,$name);
+        if (is_null($id)){
+            return $rule;
+        }
+        return $rule->ignore($id,"id");
+    }
+
+    public function existsRow($table,$column){
+        return Rule::exists($table,$column)->whereNull("deleted_at");
+    }
+
+    public static function urlIsApi(bool $withAjax = true): mixed{
         $request = request();
         $withAjax = $withAjax && $request->ajax();
         return $request->is('api/*') || $request->is('api') || $withAjax;
-    }}
+    }
+}

@@ -2,6 +2,7 @@
 
 namespace App\Helpers\Traits;
 
+use App\Exceptions\CrudException;
 use App\Helpers\ClassesBase\Models\BaseTranslationModel;
 use App\Helpers\ClassesStatic\MessagesFlash;
 use App\Helpers\MyApp;
@@ -14,13 +15,14 @@ trait TFunctionsCrudRepository
     use TLogMain;
 
     private function createInTranslationTable($idItem, array $translationFieldsData, $languageDifferent = null){
-        $language = MyApp::Classes()->languageProcess->getLanguageDefault();
+        $language = is_null($languageDifferent) ? MyApp::Classes()->languageProcess->getLanguageDefault() : $languageDifferent;
         if (!is_null($language)){
             $translationFieldsData[MyApp::Classes()->languageProcess->getFkMainTableInTranslationTable()] = $idItem;
-            $translationFieldsData[MyApp::Classes()->languageProcess->getFkLanguageInTranslationTable()] = $languageDifferent->id ?? $language->id;
+            $translationFieldsData[MyApp::Classes()->languageProcess->getFkLanguageInTranslationTable()] = $language->id;
             $translationFieldsData["created_at"] = now();
             DB::table($this->nameTableTranslation)->insert($translationFieldsData);
         }
+        throw new CrudException(__("errors.lang_default_is_null"));
     }
 
     private function createOrUpdateInTranslationTable($idItem,array $translationFieldsData){
@@ -35,7 +37,7 @@ trait TFunctionsCrudRepository
 
         if (!is_null($language)){
             $mainQuery = DB::table($this->nameTableTranslation)
-                ->where(MyApp::Classes()->languageProcess->getFkMainTableInTranslationTable(),$idItem->id)
+                ->where(MyApp::Classes()->languageProcess->getFkMainTableInTranslationTable(),$idItem)
                 ->where(MyApp::Classes()->languageProcess->getFkLanguageInTranslationTable(),$language->id);
             if ($mainQuery->exists()){
                 $translationFieldsData['updated_at'] = now();
@@ -44,10 +46,11 @@ trait TFunctionsCrudRepository
                 $this->createInTranslationTable($idItem,$translationFieldsData,$language);
             }
         }
+        throw new CrudException(__("errors.lang_default_is_null"));
     }
 
-    private function mainEditFieldsValue($data){
-        $data = $this->resolveDataSlugFields($this->resolveDatafileFields($data));
+    private function mainEditFieldsValue($data,array $fieldsFile = []){
+        $data = $this->resolveDataSlugFields($this->resolveDatafileFields($data,$fieldsFile));
         if ($this->model instanceof BaseTranslationModel){
             $translationFields = $this->model->fieldsTranslation();
             $finalData = Arr::except($data,$translationFields);
@@ -57,11 +60,12 @@ trait TFunctionsCrudRepository
         return $data;
     }
 
-    private function resolveDatafileFields($data){
+    private function resolveDatafileFields($data,array $fieldsFile = []){
         $keysFiles = $this->viewFields()->fieldsFiles();
+        $keysFiles = array_merge($keysFiles,$fieldsFile);
         foreach ($keysFiles as $file){
             if (isset($data[$file]) && (is_file($data[$file]) || $data[$file] instanceof UploadedFile)){
-                $data[$file] = MyApp::Classes()->fileProcess->storeFile($data[$file],$this->nameTable);
+                $data[$file] = MyApp::Classes()->fileProcess->storeFile($data[$file],$this->nameTable,$this->diskStorage);
             }
         }
         return $data;

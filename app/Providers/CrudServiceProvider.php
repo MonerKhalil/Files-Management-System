@@ -32,7 +32,7 @@ class CrudServiceProvider extends ServiceProvider
 
                     $namespaceRepo = "App\\Http\\CrudFiles\\Repositories\\Eloquent\\" . substr($file, 1, strlen($file));
 
-                    $this->app->bind("App\\Http\\CrudFiles\\Repositories\\Interfaces\\" . $file, $namespaceRepo);
+                    $this->app->singleton("App\\Http\\CrudFiles\\Repositories\\Interfaces\\" . $file, $namespaceRepo);
 
                     $obj = app($namespaceRepo)->actions();
 
@@ -44,7 +44,7 @@ class CrudServiceProvider extends ServiceProvider
 
     private function registerActionsRoutes($obj){
         $vAPI = MyApp::VersionApi;
-        Route::middleware("api")
+        Route::middleware(["api","authUser","verifyUser","xss"])
             ->prefix("api/{$vAPI}/dashboard")
             ->name("api.")
             ->group(function ()use ($obj){

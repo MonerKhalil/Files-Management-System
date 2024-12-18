@@ -85,6 +85,24 @@ class StorageFileProcess
         throw new MainException("the path file {$path} is not exists");
     }
 
+    /**
+     * @param string $path
+     * @param string|null $disk
+     * @return mixed
+     * @throws MainException
+     * @author moner khalil
+     */
+    public function responseFile(string $path, string $disk = null)
+    {
+        $path = ltrim($path, self::FOLDER_STORAGE.'/');
+        $path = Storage::disk(is_null($disk) ? self::DISK : $disk)->path($path);
+        $file = file_exists($path) ? $path : null;
+        if (!is_null($file)) {
+            return response()->file($file);
+        }
+        throw new MainException("the path file {$path} is not exists");
+    }
+
     public function getSizeFiles(){
         return self::Max_SIZE_FILE;
     }

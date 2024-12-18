@@ -16,9 +16,8 @@ interface IBaseRepository
     public function getOnlyTrashes(bool $isAll = false, bool $withFilter = true, callable $callback = null, bool $withRelations = true, array $fieldsOrders = ["created_at"], string $typeOrder = "desc"): mixed;
     public function find($value, string $key = "id", ?callable $callback = null, bool $withRelations = true, bool $withFail = true, bool $withTranslationsRelation = false): mixed;
     #proccess_data
-    public function create($data, bool $showMessage = true): mixed;
-    public function update($data, $itemId, bool $showMessage = true,?callable $callback = null): mixed;
-//    public function importData($file): mixed;
+    public function create($data, bool $showMessage = true,array $fieldsFile = []): mixed;
+    public function update($data, $itemId, bool $showMessage = true,?callable $callback = null,array $fieldsFile = []): mixed;
     #export_data
     public function exportXLSX(bool $isEmpty = false,?array $values = null, string $key = "id",?callable $callback = null): mixed;
     public function exportPDF(?array $values = null, string $key = "id",?callable $callback = null): mixed;

@@ -8,11 +8,14 @@ class RoleViewFields extends BaseViewFields
 {
     public function fieldsAllModel():array{
         return [
+            "name" => $this->fieldText(__("messages.name"),true),
+            "display_name" => $this->fieldText(__("messages.display_name"),true),
+            "description" => $this->fieldEditor(__("messages.description"),true),
         ];
     }
 
     public function fieldsSearch():array{
-        return ["created_at","updated_at"];
+        return ["created_at","updated_at","name","display_name","description"];
     }
 
     public function ignoreFieldsShow():array{
@@ -28,7 +31,7 @@ class RoleViewFields extends BaseViewFields
     }
 
     public function fieldsLike():array{
-        return [];
+        return ["name","display_name","description"];
     }
 
     public function fieldsFiles():array{

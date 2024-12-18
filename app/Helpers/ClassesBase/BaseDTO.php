@@ -2,6 +2,8 @@
 
 namespace App\Helpers\ClassesBase;
 
+use Illuminate\Validation\ValidationException;
+
 abstract class BaseDTO
 {
     public function __construct($data){
@@ -19,17 +21,19 @@ abstract class BaseDTO
 
     protected abstract function setAttributes();
 
-     /**
+    /**
      * @param array $variables
-     * @return mixed
+     * @return void
+     * @throws ValidationException
      */
-    protected function isNullMulti(array $variables): bool
+    protected function isNullMulti(array $variables)
     {
         foreach ($variables as $variable => $value){
             if (is_null($value)){
-                return $variable;
+                throw ValidationException::withMessages([
+                    $variable => __('errors.value_failed'),
+                ]);
             }
         }
-        return false;
     }
 }

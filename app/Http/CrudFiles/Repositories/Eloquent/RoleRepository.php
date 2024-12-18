@@ -9,6 +9,7 @@ use App\Models\Role;
 use App\Helpers\ClassesBase\Repositories\BaseRepository;
 use App\Helpers\ClassesBase\BaseViewFields;
 use App\Helpers\ClassesBase\Routes\CrudActions;
+use Illuminate\Support\Facades\Cache;
 
 class RoleRepository extends BaseRepository implements IRoleRepository
 {

@@ -7,7 +7,7 @@ use Illuminate\Support\Carbon;
 
 class StringProcess
 {
-    /**
+    /**s
      * @param string $strValue
      * @param $queryModel
      * @param string $column
@@ -15,14 +15,16 @@ class StringProcess
      * @return string
      * @author moner khalil
      */
-    function uniqueColumn(string $strValue, $queryModel, string $column = 'slug',$ignoreId = null): string
+    function uniqueColumn(string $strValue, $queryModel, string $column = 'slug',$ignoreId = null,bool $withPreg = true): string
     {
         $slug = $strValue;
 
-        $string = mb_strtolower($slug, "UTF-8");;
-        $string = preg_replace("/[\/.]/", " ", $string);
-        $string = preg_replace("/[\s-]+/", " ", $string);
-        $slug = preg_replace("/[\s_]/", '-', $string);
+        if ($withPreg){
+            $string = mb_strtolower($slug, "UTF-8");;
+            $string = preg_replace("/[\/.]/", " ", $string);
+            $string = preg_replace("/[\s-]+/", " ", $string);
+            $slug = preg_replace("/[\s_]/", '-', $string);
+        }
 
         //get unique slug...
         $nSlug = $slug;
@@ -55,35 +57,38 @@ class StringProcess
 
     /**
      * @description Check String is Date and Convert to YYYY-MM-DD
-     * @param string $inputString
+     * @param ?string $inputString
      * @param bool $withTimeStamp
      * @param bool $isEndDay
-     * @return false|string
+     * @return  null|string
      * @author moner khalil
      */
-    public function dateFormat(string $inputString,bool $withTimeStamp = false , bool $isEndDay = false): bool|string
+    public function dateFormat(?string $inputString,bool $withTimeStamp = false , bool $isEndDay = false): null|string
     {
-        $formats = [
-            'Y-m-d',
-            'd-m-Y',
-            'd/m/Y',
-            'm/d/Y',
-        ];
-        $isValid = false;
-        foreach ($formats as $format) {
-            $date = DateTime::createFromFormat($format, $inputString);
-            if ($date !== false && $date->format($format) === $inputString) {
-                $isValid = true;
-                $inputString = Carbon::createFromFormat($format, $inputString);
-                if ($withTimeStamp && $isEndDay){
-                    $inputString = $inputString->endOfDay();
+        try {
+            $formats = [
+                'Y-m-d',
+                'd-m-Y',
+                'd/m/Y',
+                'm/d/Y',
+            ];
+            $inputString = null;
+            foreach ($formats as $format) {
+                $date = DateTime::createFromFormat($format, $inputString);
+                if ($date !== false && $date->format($format) === $inputString) {
+                    $inputString = Carbon::createFromFormat($format, $inputString);
+                    if ($withTimeStamp && $isEndDay){
+                        $inputString = $inputString->endOfDay();
+                    }
+                    $finalFormat = $withTimeStamp ? 'Y-m-d H:i:s' : 'Y-m-d';
+                    $inputString = $inputString->format($finalFormat);
+                    break;
                 }
-                $finalFormat = $withTimeStamp ? 'Y-m-d H:i:s' : 'Y-m-d';
-                $inputString = $inputString->format($finalFormat);
-                break;
             }
+            return $inputString;
+        }catch (\Exception $exception){
+            return null;
         }
-        return $isValid ? $inputString : false;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace App\Helpers\ClassesBase\Repositories;
 
 use App\Exceptions\CrudException;
 use App\Helpers\ClassesBase\BaseExportData;
+use App\Helpers\ClassesBase\BaseRepositoryObserver;
 use App\Helpers\ClassesBase\Models\BaseTranslationModel;
 use App\Helpers\ClassesStatic\AdapterData;
 use App\Helpers\MyApp;
@@ -25,9 +26,14 @@ abstract class BaseRepository implements IBaseRepository
     public string $nameTableTranslation = "";
     public ?BaseModel $model = null;
 
+    protected ?BaseRepositoryObserver $observer = null;
+
+    public string|null $diskStorage = null;
+
     public function __construct(App $app)
     {
         $this->makeModel($app);
+        $this->setObserver(null);
         $this->nameTable = $this->model->getTable();
         $this->nameTableTranslation = ($this->model instanceof BaseTranslationModel) ? $this->nameTable."_translations" : "";
     }
@@ -41,6 +47,10 @@ abstract class BaseRepository implements IBaseRepository
         }
     }
 
+    public function setObserver(?BaseRepositoryObserver $observer){
+        $this->observer = $observer;
+    }
+
     /**
      * @description get data items without trashed
      * @param bool $isAll
@@ -52,7 +62,7 @@ abstract class BaseRepository implements IBaseRepository
      * @return mixed
      * @author moner khalil
      */
-    public function get(bool $isAll = false, bool $withFilter = true, callable $callback = null, bool $withRelations = true, array $fieldsOrders = ["created_at"], string $typeOrder = "desc"): mixed{
+    public function get(bool $isAll = false, bool $withFilter = true, callable $callback = null, bool $withRelations = false, array $fieldsOrders = ["created_at"], string $typeOrder = "desc"): mixed{
         return $this->mainGetData($isAll,$withFilter,$callback,$withRelations,$fieldsOrders,$typeOrder,false);
     }
 
@@ -67,7 +77,7 @@ abstract class BaseRepository implements IBaseRepository
      * @return mixed
      * @author moner khalil
      */
-    public function getOnlyTrashes(bool $isAll = false, bool $withFilter = true, callable $callback = null, bool $withRelations = true, array $fieldsOrders = ["created_at"], string $typeOrder = "desc"): mixed{
+    public function getOnlyTrashes(bool $isAll = false, bool $withFilter = true, callable $callback = null, bool $withRelations = false, array $fieldsOrders = ["created_at"], string $typeOrder = "desc"): mixed{
         return $this->mainGetData($isAll,$withFilter,$callback,$withRelations,$fieldsOrders,$typeOrder,true);
     }
 
@@ -81,7 +91,7 @@ abstract class BaseRepository implements IBaseRepository
      * @return mixed
      * @author moner khalil
      */
-    public function find($value, string $key = "id", ?callable $callback = null, bool $withRelations = true, bool $withFail = true, bool $withTranslationsRelation = false): mixed{
+    public function find($value, string $key = "id", ?callable $callback = null, bool $withRelations = false, bool $withFail = true, bool $withTranslationsRelation = false): mixed{
         $query = $this->queryModel()->withTrashed();
         $query = !is_null($callback) ? $callback($query) : $query;
         $query = $query->where($key,"=",$value);
@@ -94,15 +104,16 @@ abstract class BaseRepository implements IBaseRepository
     /**
      * @param $data
      * @param bool $showMessage
+     * @param array $fieldsFile
      * @return mixed
      * @throws CrudException
      * @author moner khalil
      */
-    public function create($data, bool $showMessage = true): mixed{
+    public function create($data, bool $showMessage = true,array $fieldsFile = []): mixed{
         try {
             DB::beginTransaction();
             $process = "create";
-            $finalData = $this->mainEditFieldsValue($data);
+            $finalData = $this->mainEditFieldsValue($data,$fieldsFile);
             if (isset($finalData["@__translationFields__@"]) && $this->model instanceof BaseTranslationModel){
                 $translationFieldsData = $finalData["@__translationFields__@"];
                 unset($finalData["@__translationFields__@"]);
@@ -125,15 +136,16 @@ abstract class BaseRepository implements IBaseRepository
      * @param $itemId
      * @param bool $showMessage
      * @param callable|null $callback
+     * @param array $fieldsFile
      * @return mixed
      * @throws CrudException
      * @author moner khalil
      */
-    public function update($data, $itemId, bool $showMessage = true, ?callable $callback = null): mixed{
+    public function update($data, $itemId, bool $showMessage = true, ?callable $callback = null,array $fieldsFile = []): mixed{
         try {
             DB::beginTransaction();
             $process = "update";
-            $finalData = $this->mainEditFieldsValue($data);
+            $finalData = $this->mainEditFieldsValue($data,$fieldsFile);
             if (isset($finalData["@__translationFields__@"]) && $this->model instanceof BaseTranslationModel){
                 $translationFieldsData = $finalData["@__translationFields__@"];
                 unset($finalData["@__translationFields__@"]);
@@ -352,7 +364,7 @@ abstract class BaseRepository implements IBaseRepository
         try {
             $data = $this->getMainDataInExport($values,$key,$callback);
 
-            $pdf = PDF::loadView('ExportCrud.export.pdf', [
+            $pdf = PDF::loadView('export-crud.export.pdf', [
                 "data" => $data,
             ]);
 

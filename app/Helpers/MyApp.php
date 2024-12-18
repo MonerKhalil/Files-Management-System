@@ -2,9 +2,11 @@
 
 namespace App\Helpers;
 
+use App\Helpers\ClassesProcess\CacheMainDataProcess;
 use App\Helpers\ClassesProcess\CurrencyProcess;
 use App\Helpers\ClassesProcess\DataBaseProcess;
 use App\Helpers\ClassesProcess\LanguageProcess;
+use App\Helpers\ClassesProcess\MailProcess;
 use App\Helpers\ClassesProcess\ResponseProcess;
 use App\Helpers\ClassesProcess\RolesPermissions\PermissionsMap;
 use App\Helpers\ClassesProcess\RolesPermissions\UserProcess;
@@ -38,6 +40,10 @@ class MyApp
 
     public ?PermissionsMap $permissionsMap = null;
 
+    public ?CacheMainDataProcess $cacheProcess = null;
+
+    public ?MailProcess $mailProcess = null;
+
     public function __construct()
     {
         $this->user = new UserProcess();
@@ -48,6 +54,8 @@ class MyApp
         $this->dataBaseProcess = new DataBaseProcess();
         $this->responseProcess = new ResponseProcess();
         $this->permissionsMap = new PermissionsMap();
+        $this->cacheProcess = new CacheMainDataProcess();
+        $this->mailProcess = new MailProcess();
     }
 
     /**

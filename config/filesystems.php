@@ -1,6 +1,7 @@
 <?php
 
 use App\Helpers\ClassesProcess\StorageFileProcess;
+use App\Models\FileManager;
 
 $mainPath = StorageFileProcess::FOLDER_STORAGE;
 
@@ -37,6 +38,12 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app'),
+            'throw' => false,
+        ],
+
+        FileManager::DISK => [
+            'driver' => 'local',
+            'root' => storage_path(FileManager::DISK),
             'throw' => false,
         ],
 

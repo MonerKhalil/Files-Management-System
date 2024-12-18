@@ -217,7 +217,7 @@ class CrudGenerateCommand extends BaseCrudCommand
         $controllerFile = str_replace("{{namespace-File}}", $this->getNamespaceFoldersCrud($namespace,"controller"), $controllerFile);
         $controllerFile = str_replace("{{namespace-Request}}", $this->getNamespaceFilesCrud($model,$namespace,"request"), $controllerFile);
         $controllerFile = str_replace("{{namespace-IRepository}}", $this->getNamespaceFilesCrud($model,$namespace,"repositoryInterface"), $controllerFile);
-        $controllerFile = str_replace("{{-function-edit-}}", $isTranslation ? 'find($id,"id",null,true,true,true)' : 'find($id)', $controllerFile);
+        $controllerFile = str_replace("{{-function-edit-}}", $isTranslation ? 'find($id,"id",null,true,true,true)' : 'find($id,"id",null,true)', $controllerFile);
         File::put($this->getPathFilesCrud($model, 'controller',$namespace), $controllerFile);
     }
 

@@ -19,9 +19,9 @@ abstract class BaseViewFields
 
     public abstract function fieldsAllModel():array;
 
-    public abstract function ignoreFieldsShow():array;
-
     public abstract function fieldsSearch():array;
+
+    public abstract function ignoreFieldsShow():array;
 
     public abstract function ignoreFieldsCreate():array;
 
@@ -72,7 +72,7 @@ abstract class BaseViewFields
         return [];
     }
 
-    private function mainColumns(){
+    protected function mainColumns(){
         return [
             "created_by" => $this->fieldRelation(__("messages.created_by"),"id","name","userCreatedBy",null,false),
             "created_at" => $this->fieldDate(__("messages.created_at"),false),

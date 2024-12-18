@@ -2,25 +2,21 @@
 
 namespace App\Rules;
 
-use App\Http\Repositories\Eloquent\MediaManagerRepository;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Http\UploadedFile;
 
 class FileMediaRule implements Rule
 {
-    private $MediaManagerRepository = null;
     private $types = null,$size = null,$canIdMediaManager;
     /**
      * Create a new rule instance.
      *
      * @return void
      */
-    public function __construct($types,$size,bool $canIdMediaManager = true)
+    public function __construct($types,$size)
     {
-        $this->MediaManagerRepository = (new MediaManagerRepository(app()));
         $this->types = $types;
         $this->size = $size;
-        $this->canIdMediaManager = $canIdMediaManager;
     }
 
     /**
@@ -32,9 +28,7 @@ class FileMediaRule implements Rule
      */
     public function passes($attribute, $value)
     {
-        if (is_numeric($value) && $this->canIdMediaManager){
-            return $this->checkValueIsMediaManager($value);
-        }elseif((is_file($value) || $value instanceof UploadedFile) && !is_string($value)){
+        if((is_file($value) || $value instanceof UploadedFile) && !is_string($value)){
             if (!in_array($value->getClientOriginalExtension(),$this->types)){
                 return false;
             }
@@ -44,8 +38,6 @@ class FileMediaRule implements Rule
                 return false;
             }
             return true;
-        }elseif (is_string($value) && $this->canIdMediaManager){
-            return $this->checkValueIsMediaManager($value,"pdf_path");
         }
         return false;
     }
@@ -57,17 +49,6 @@ class FileMediaRule implements Rule
      */
     public function message()
     {
-        return 'The id or path_file media manage is not exist | the file not ext ' . implode(",",$this->types) . " | the file is max ".$this->size." .";
-    }
-
-    private function checkValueIsMediaManager($value,string $key = "id"){
-        $item = $this->MediaManagerRepository->queryModelWithActive()->where($key,$value)->first();
-        if (is_null($item)){
-            return false;
-        }
-        if (!in_array($item->extension,$this->types)){
-            return false;
-        }
-        return true;
+        return 'The file not ext ' . implode(",",$this->types) . " | the file is max ".$this->size." .";
     }
 }

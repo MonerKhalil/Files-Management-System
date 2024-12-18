@@ -28,7 +28,9 @@ class UserSeeder extends Seeder
                 "email" => "monerkhalil90@gmail.com",
                 "password" => Hash::make("123123123"),
                 "phone" => "0937341826",
+                "email_verified_at" => now(),
                 "role_id" => $role->id,
+                "denied_from_delete" => true,
             ]);
             $user->addRole($role->id);
         }

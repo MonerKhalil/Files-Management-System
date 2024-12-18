@@ -15,7 +15,7 @@ class VerifyEmailCodeRequest extends BaseRequest
     public function rules(): array
     {
         return [
-            'code' => ["required","string"],
+            'code' => $this->textRule(true),
         ];
     }
 }

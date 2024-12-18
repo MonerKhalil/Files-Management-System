@@ -69,5 +69,6 @@ class Kernel extends HttpKernel
         'permissions' => \App\Http\Middleware\CoreMiddlewares\PermissionsMiddleware::class,
         'verifyUser' => \App\Http\Middleware\CoreMiddlewares\VerifyUserMiddleware::class,
         'notVerifyUser' => \App\Http\Middleware\CoreMiddlewares\NotVerifyUserMiddleware::class,
+        'xss' => \App\Http\Middleware\CoreMiddlewares\XssMiddleware::class,
     ];
 }

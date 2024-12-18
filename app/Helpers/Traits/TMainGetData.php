@@ -3,7 +3,6 @@
 namespace App\Helpers\Traits;
 
 use App\Helpers\ClassesBase\Models\BaseTranslationModel;
-use App\Helpers\ClassesStatic\AdapterData;
 use App\Helpers\MyApp;
 
 trait TMainGetData

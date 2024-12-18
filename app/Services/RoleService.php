@@ -2,11 +2,40 @@
 
 namespace App\Services;
 
+use App\Exceptions\CrudException;
+use App\Http\CrudFiles\Repositories\Interfaces\IRoleRepository;
 use App\Models\Permission;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class RoleService
 {
+    public function __construct(private IRoleRepository $IRoleRepository){
+    }
+
+    public function createOrUpdate($data,$permissions,$id = null){
+        try {
+            DB::beginTransaction();
+            $dataRole = Arr::except($data,["permissions"]);
+            if (is_null($id)){
+                $item = $this->IRoleRepository->create($dataRole);
+            }else{
+                $item = $this->IRoleRepository->update($dataRole,$id);
+            }
+            $permissions = Permission::query()
+                ->select(["id"])
+                ->whereIn("id",$permissions)
+                ->pluck("id")
+                ->toArray();
+            $item->syncPermissions($permissions);
+            DB::commit();
+            return compact("item","permissions");
+        }catch (\Exception $exception){
+            DB::rollBack();
+            throw new CrudException($exception->getMessage());
+        }
+    }
+
     public function getPermissions(){
         $tables = $this->getAllNameTables();
         $permissions = Permission::query()->get(["id","name"]);

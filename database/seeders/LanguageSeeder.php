@@ -2,10 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Language;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Schema;
 
 class LanguageSeeder extends Seeder
 {
@@ -14,10 +13,21 @@ class LanguageSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table("languages")->insert([
+        Schema::disableForeignKeyConstraints();
+        Language::query()->truncate();
+        Schema::enableForeignKeyConstraints();
+        Language::query()->create([
             "code" => "en",
             "name" => "English",
             "default" => true,
+            "denied_from_delete" => true,
+        ]);
+        Language::query()->create([
+            "code" => "ar",
+            "name" => "العربية",
+            "default" => true,
+            'isRTL' => true,
+            "denied_from_delete" => true,
         ]);
     }
 }

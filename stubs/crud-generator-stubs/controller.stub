@@ -24,7 +24,7 @@ class {{-model-}}Controller extends Controller
      * @author moner khalil
      */
     public function index() {
-        ${$this->I{{-model-}}Repository->nameTable} = $this->I{{-model-}}Repository->get();
+        ${$this->I{{-model-}}Repository->nameTable} = $this->I{{-model-}}Repository->get(false,true,null,true);
         return $this->responseSuccess(get_defined_vars());
     }
 
@@ -34,7 +34,7 @@ class {{-model-}}Controller extends Controller
      * @author moner khalil
      */
      public function indexTrashes() {
-        ${$this->I{{-model-}}Repository->nameTable} = $this->I{{-model-}}Repository->getOnlyTrashes();
+        ${$this->I{{-model-}}Repository->nameTable} = $this->I{{-model-}}Repository->getOnlyTrashes(false,true,null,true);
         return $this->responseSuccess(get_defined_vars());
     }
 
@@ -67,7 +67,7 @@ class {{-model-}}Controller extends Controller
     }
 
     public function show($id) {
-        $item = $this->I{{-model-}}Repository->find($id);
+        $item = $this->I{{-model-}}Repository->find($id,"id",null,true);
         return $this->responseSuccess(compact("item"));
     }
 

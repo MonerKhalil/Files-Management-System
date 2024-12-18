@@ -34,6 +34,24 @@ trait TRulesFront
         ];
     }
 
+    protected function fieldBoolean(string $labelInput, bool $is_required = true){
+        return [
+            "labelInput" => $labelInput,
+            "type" => TypesFieldsEnum::BOOLEAN->value,
+            "is_required" => $is_required,
+            "validation" => $is_required ? "required" : "",
+        ];
+    }
+
+    protected function fieldUrl(string $labelInput, bool $is_required = true){
+        return [
+            "labelInput" => $labelInput,
+            "type" => TypesFieldsEnum::URL->value,
+            "is_required" => $is_required,
+            "validation" => $is_required ? "required" : "",
+        ];
+    }
+
     protected function fieldEnum(array $values,string $labelInput, bool $is_required = true,string $defaultValue = null){
         return [
             "labelInput" => $labelInput,
@@ -45,27 +63,27 @@ trait TRulesFront
         ];
     }
 
-    protected function fieldImage(string $labelInput, bool $is_required = true,string $defaultValue = null){
+    protected function fieldImage(string $labelInput, bool $is_required = true,string $defaultValue = null,?array $extinctions = null,?int $max_size = null){
         return [
             "labelInput" => $labelInput,
             "type" => TypesFieldsEnum::IMAGE->value,
             "is_required" => $is_required,
             "validation" => $is_required ? "required" : "",
             "default" => $defaultValue,
-            "extinctions" => MyApp::Classes()->fileProcess->getExImages(true),
-            "max_size" => MyApp::Classes()->fileProcess->getSizeImages(),//byte
+            "extinctions" => $extinctions ?? MyApp::Classes()->fileProcess->getExImages(true),
+            "max_size" => $max_size ?? MyApp::Classes()->fileProcess->getSizeImages(),//byte
         ];
     }
 
-    protected function fieldFile(string $labelInput, bool $is_required = true,string $defaultValue = null){
+    protected function fieldFile(string $labelInput, bool $is_required = true,string $defaultValue = null,?array $extinctions = null,?int $max_size = null){
         return [
             "labelInput" => $labelInput,
             "type" => TypesFieldsEnum::FILE->value,
             "is_required" => $is_required,
             "validation" => $is_required ? "required" : "",
             "default" => $defaultValue,
-            "extinctions" => MyApp::Classes()->fileProcess->getExFiles(true),
-            "max_size" => MyApp::Classes()->fileProcess->getSizeFiles(),//byte
+            "extinctions" => $extinctions ?? MyApp::Classes()->fileProcess->getExFiles(true),
+            "max_size" => $max_size ?? MyApp::Classes()->fileProcess->getSizeFiles(),//byte
         ];
     }
 

@@ -39,4 +39,13 @@ class User extends BaseModel implements AuthenticatableContract,AuthorizableCont
     public function role(){
         return $this->belongsTo(Role::class,"role_id","id");
     }
+
+    public function groups_pivot(){
+        return $this->hasMany(GroupUser::class,"user_id","id");
+    }
+
+    public function groups(){
+        return $this->belongsToMany(GroupManager::class,"group_users","user_id","group_id")
+            ->withTimestamps();
+    }
 }

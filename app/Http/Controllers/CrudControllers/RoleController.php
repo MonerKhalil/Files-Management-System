@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\CrudControllers;
 
+use App\Helpers\MyApp;
 use App\Http\Controllers\Controller;
 use App\Services\RoleService;
 use Illuminate\Http\Request;
@@ -25,7 +26,7 @@ class RoleController extends Controller
      * @author moner khalil
      */
     public function index() {
-        ${$this->IRoleRepository->nameTable} = $this->IRoleRepository->get();
+        ${$this->IRoleRepository->nameTable} = $this->IRoleRepository->get(false,true,null,true);
         return $this->responseSuccess(get_defined_vars());
     }
 
@@ -35,7 +36,7 @@ class RoleController extends Controller
      * @author moner khalil
      */
      public function indexTrashes() {
-        ${$this->IRoleRepository->nameTable} = $this->IRoleRepository->getOnlyTrashes();
+        ${$this->IRoleRepository->nameTable} = $this->IRoleRepository->getOnlyTrashes(false,true,null,true);
         return $this->responseSuccess(get_defined_vars());
     }
 
@@ -45,7 +46,7 @@ class RoleController extends Controller
      * @author moner khalil
      */
     public function indexAll(){
-        ${$this->IRoleRepository->nameTable} = $this->IRoleRepository->get(true,false,null,false);
+        ${$this->IRoleRepository->nameTable} = MyApp::Classes()->cacheProcess->getAllRoles();
         return $this->responseSuccess(get_defined_vars());
     }
 
@@ -57,27 +58,36 @@ class RoleController extends Controller
     }
 
     public function create(RoleService $roleService) {
+        $fieldsShow = $this->viewFieldsCrud->getFieldsShow();
         $routesActions = $this->routesAction;
         $permissions = $roleService->getPermissions();
-        return $this->responseSuccess(compact("routesActions","permissions"));
+        return $this->responseSuccess(compact("fieldsShow","routesActions","permissions"));
     }
 
-    public function store(RoleRequest $request) {
-        $item = $this->IRoleRepository->create($request->validated());
+    public function store(RoleRequest $request,RoleService $roleService) {
+        $data = $roleService->createOrUpdate($request->validated(),$request->permissions ?? []);
+        return $this->responseSuccess($data);
+    }
+
+    public function show($id) {
+        $item = $this->IRoleRepository->find($id,"id",function ($q){
+            return $q->with(["permissions"]);
+        },true);
         return $this->responseSuccess(compact("item"));
     }
 
     public function edit($id,RoleService $roleService) {
-        $role = $this->IRoleRepository->find($id);
+        $role = $this->IRoleRepository->find($id,"id",null,true);
         $rolePermissions = $role->permissions()->pluck('name', 'id')->toArray();
-        $routesActions = $this->routesAction;
         $permissions = $roleService->getPermissions();
-        return $this->responseSuccess(compact("role","rolePermissions","permissions","routesActions"));
+        $fieldsShow = $this->viewFieldsCrud->getFieldsShow();
+        $routesActions = $this->routesAction;
+        return $this->responseSuccess(compact("role","rolePermissions","permissions","routesActions","fieldsShow"));
     }
 
-    public function update(RoleRequest $request, $id) {
-        $item = $this->IRoleRepository->update($request->validated(),$id);
-        return $this->responseSuccess(compact("item"));
+    public function update(RoleRequest $request, $id,RoleService $roleService) {
+        $data = $roleService->createOrUpdate($request->validated(),$request->permissions ?? [],$id);
+        return $this->responseSuccess($data);
     }
 
     public function delete($id) {

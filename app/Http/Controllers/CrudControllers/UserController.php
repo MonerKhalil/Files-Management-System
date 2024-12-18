@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\CrudControllers;
 
+use App\DTO\UserDTO;
+use App\Exceptions\CrudException;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Requests\CrudRequests\UserRequest;
 use App\Http\CrudFiles\Repositories\Interfaces\IUserRepository;
+use Illuminate\Support\Facades\DB;
 
 class UserController extends Controller
 {
@@ -24,7 +27,7 @@ class UserController extends Controller
      * @author moner khalil
      */
     public function index() {
-        ${$this->IUserRepository->nameTable} = $this->IUserRepository->get();
+        ${$this->IUserRepository->nameTable} = $this->IUserRepository->get(false,true,null,true);
         return $this->responseSuccess(get_defined_vars());
     }
 
@@ -34,7 +37,7 @@ class UserController extends Controller
      * @author moner khalil
      */
      public function indexTrashes() {
-        ${$this->IUserRepository->nameTable} = $this->IUserRepository->getOnlyTrashes();
+        ${$this->IUserRepository->nameTable} = $this->IUserRepository->getOnlyTrashes(false,true,null,true);
         return $this->responseSuccess(get_defined_vars());
     }
 
@@ -62,25 +65,39 @@ class UserController extends Controller
     }
 
     public function store(UserRequest $request) {
-        $item = $this->IUserRepository->create($request->validated());
-        return $this->responseSuccess(compact("item"));
+        try {
+            DB::beginTransaction();
+            $item = $this->IUserRepository->create($request->validated());
+            $item->addRole($item->role_id);
+            DB::commit();
+            return $this->responseSuccess(compact("item"));
+        }catch (\Exception $e){
+            DB::rollBack();
+            throw new CrudException($e->getMessage());
+        }
     }
 
     public function show($id) {
-        $item = $this->IUserRepository->find($id);
+        $item = $this->IUserRepository->find($id,"id",null,true);
         return $this->responseSuccess(compact("item"));
     }
 
     public function edit($id) {
-        $item = $this->IUserRepository->find($id);
+        $item = $this->IUserRepository->find($id,"id",null,true);
         $fieldsUpdate = $this->viewFieldsCrud->getFieldsUpdate();
         $routesActions = $this->routesAction;
         return $this->responseSuccess(compact("item","fieldsUpdate","routesActions"));
     }
 
     public function update(UserRequest $request, $id) {
-        $item = $this->IUserRepository->update($request->validated(),$id);
-        return $this->responseSuccess(compact("item"));
+        try {
+            $item = $this->IUserRepository->update($request->validated(),$id);
+            $item->syncRoles([$item->role_id]);
+            return $this->responseSuccess(compact("item"));
+        }catch (\Exception $e){
+            DB::rollBack();
+            throw new CrudException($e->getMessage());
+        }
     }
 
     public function delete($id) {

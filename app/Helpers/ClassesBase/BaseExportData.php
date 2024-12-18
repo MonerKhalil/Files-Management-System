@@ -10,7 +10,7 @@ class BaseExportData implements FromView ,ShouldAutoSize
 {
     public function __construct(private $head,
                                 private $body,
-                                private $blade = "ExportCrud.export.xlsx",
+                                private $blade = "export-crud.export.xlsx",
                                 private array $data = [],
                                 private bool $isEmpty = false)
     {

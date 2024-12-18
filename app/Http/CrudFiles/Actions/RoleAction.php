@@ -9,7 +9,6 @@ class RoleAction extends CrudActions
 {
     protected function handle():void{
         #code...
-        $this->showAction->setActive(false);
     }
 
     protected function controller():string{
