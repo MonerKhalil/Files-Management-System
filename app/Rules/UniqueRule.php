@@ -12,7 +12,7 @@ class UniqueRule implements Rule
      *
      * @return void
      */
-    public function __construct(private $table ,private  $key ,private  $ignoreId = null,private ?array $where = null, private $callback = null)
+    public function __construct(private $table ,private  $key ,private  $ignoreId = null, private $callback = null)
     {
         //
     }
@@ -26,34 +26,15 @@ class UniqueRule implements Rule
      */
     public function passes($attribute, $value)
     {
-        $mainData = request()->main_data;
-        $q = DB::table($this->table)->where($this->key,$value);
+        $mainQuery = DB::table($this->table)->where($this->key,$value);
         $callback = $this->callback;
         if (!is_null($callback)){
-            $q = $callback($q);
+            $mainQuery = $callback($mainQuery);
         }
-        if (!is_null($this->where) && !is_array($mainData)){
-            foreach ($this->where as $key => $value){
-                $q = $q->where($key,$value);
-            }
+        if (!is_null($this->ignoreId)){
+            $mainQuery = $mainQuery->whereNot("id",$this->ignoreId);
         }
-        if (is_array($mainData)){
-            foreach ($mainData as $datum){
-                $row_id = $datum["row_id"] ?? null;
-                if ($datum[$this->key] == $value){
-                    if (!is_null($row_id)){
-                        $q = $q->whereNot("id",$row_id);
-                    }
-                    if (!is_null($this->where)){
-                        foreach ($this->where as $key => $value){
-                            $q = $q->where($key,$datum[$key]);
-                        }
-                    }
-                    return !$q->exists();
-                }
-            }
-        }
-        return is_null($this->ignoreId) ? !$q->exists() : !$q->whereNot("id",$this->ignoreId)->exists();
+        return !$mainQuery->exists();
     }
 
     /**

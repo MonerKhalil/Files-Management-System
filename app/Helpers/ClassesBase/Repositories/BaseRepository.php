@@ -4,7 +4,7 @@ namespace App\Helpers\ClassesBase\Repositories;
 
 use App\Exceptions\CrudException;
 use App\Helpers\ClassesBase\BaseExportData;
-use App\Helpers\ClassesBase\BaseRepositoryObserver;
+use App\Helpers\ClassesBase\ObserverActions;
 use App\Helpers\ClassesBase\Models\BaseTranslationModel;
 use App\Helpers\ClassesStatic\AdapterData;
 use App\Helpers\MyApp;
@@ -26,14 +26,14 @@ abstract class BaseRepository implements IBaseRepository
     public string $nameTableTranslation = "";
     public ?BaseModel $model = null;
 
-    protected ?BaseRepositoryObserver $observer = null;
+    protected ?ObserverActions $observer = null;
 
     public string|null $diskStorage = null;
 
     public function __construct(App $app)
     {
         $this->makeModel($app);
-        $this->setObserver(null);
+        $this->setObserver($this->initObjectObserver());
         $this->nameTable = $this->model->getTable();
         $this->nameTableTranslation = ($this->model instanceof BaseTranslationModel) ? $this->nameTable."_translations" : "";
     }
@@ -47,8 +47,12 @@ abstract class BaseRepository implements IBaseRepository
         }
     }
 
-    public function setObserver(?BaseRepositoryObserver $observer){
+    private function setObserver(?ObserverActions $observer){
         $this->observer = $observer;
+    }
+
+    protected function initObjectObserver():ObserverActions|null{
+        return null;
     }
 
     /**
@@ -123,6 +127,9 @@ abstract class BaseRepository implements IBaseRepository
                 $this->createInTranslationTable($item->id,$translationFieldsData);
             }
             $this->logAndNotify($process,$item,$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return ($this->model instanceof BaseTranslationModel) ? AdapterData::singleDataTranslation($item) : $item;
         }catch (\Exception $exception){
@@ -163,6 +170,9 @@ abstract class BaseRepository implements IBaseRepository
                 throw new \Exception("the item is not found -_-");
             }
             $this->logAndNotify($process,$item,$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return ($this->model instanceof BaseTranslationModel) ? AdapterData::singleDataTranslation($item) : $item;
         }catch (\Exception $exception){
@@ -181,6 +191,9 @@ abstract class BaseRepository implements IBaseRepository
             }
             $query->delete();
             $this->logAndNotify($process,collect([$key => $value]),$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){
@@ -199,6 +212,9 @@ abstract class BaseRepository implements IBaseRepository
             }
             $query->delete();
             $this->logAndNotify($process,collect([$key => $values]),$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){
@@ -227,6 +243,9 @@ abstract class BaseRepository implements IBaseRepository
                 $query->forceDelete();
                 $this->logAndNotify($process,collect([$key => $value]),$showMessage);
             }
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){
@@ -254,6 +273,9 @@ abstract class BaseRepository implements IBaseRepository
             }
             $query->forceDelete();
             $this->logAndNotify($process,collect([$key => $values]),$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){
@@ -272,6 +294,9 @@ abstract class BaseRepository implements IBaseRepository
             }
             $query->restore();
             $this->logAndNotify($process,collect([$key => $value]),$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){
@@ -290,6 +315,9 @@ abstract class BaseRepository implements IBaseRepository
             }
             $query->restore();
             $this->logAndNotify($process,collect([$key => $values]),$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){
@@ -308,6 +336,9 @@ abstract class BaseRepository implements IBaseRepository
             }
             $query->restore();
             $this->logAndNotify($process,"all",$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){
@@ -335,6 +366,9 @@ abstract class BaseRepository implements IBaseRepository
             }
             $query->forceDelete();
             $this->logAndNotify($process,"all",$showMessage);
+            if (!is_null($this->observer)){
+                $this->observer->executeCallback(__FUNCTION__);
+            }
             DB::commit();
             return true;
         }catch (\Exception $exception){

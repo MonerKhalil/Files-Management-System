@@ -2,6 +2,7 @@
 
 namespace App\Http\CrudFiles\Repositories\Eloquent;
 
+use App\Helpers\ClassesBase\ObserverActions;
 use App\Http\CrudFiles\Repositories\Interfaces\IRoleRepository;
 use App\Http\CrudFiles\ViewFields\RoleViewFields;
 use App\Http\CrudFiles\Actions\RoleAction;
@@ -27,5 +28,11 @@ class RoleRepository extends BaseRepository implements IRoleRepository
 
     public function actions():CrudActions{
         return new RoleAction($this);
+    }
+
+    protected function initObjectObserver():ObserverActions|null{
+        return new ObserverActions(function (){
+            Cache::forget(Role::ROLE_NAME_CACHE);
+        });
     }
 }

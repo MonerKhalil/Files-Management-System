@@ -3,9 +3,12 @@
 namespace App\Helpers\ClassesBase;
 
 use App\Helpers\MyApp;
+use App\Rules\ExistsRowRule;
+use App\Rules\ExistsRowTranslationRule;
 use App\Rules\FileMediaRule;
 use App\Rules\PhoneRule;
 use App\Rules\TextRule;
+use App\Rules\UniqueRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Password;
@@ -206,16 +209,16 @@ class BaseRequest extends FormRequest
         return $rules;
     }
 
-    public function unique($table,$name,$id = null){
-        $rule = Rule::unique($table,$name);
-        if (is_null($id)){
-            return $rule;
-        }
-        return $rule->ignore($id,"id");
+    public function unique($table,$column,$id = null,$callback = null){
+        return new UniqueRule($table,$column,$id,$callback);
     }
 
-    public function existsRow($table,$column){
-        return Rule::exists($table,$column)->whereNull("deleted_at");
+    public function existsRow($table,$column,$callback){
+        return new ExistsRowRule($table,$column,$callback);
+    }
+
+    public function existsRowTranslation($mainTable, $keyTranslation, $callbackQueryMainTable = null, $callbackQueryTranslationTable = null){
+        return new ExistsRowTranslationRule($mainTable,$keyTranslation,$callbackQueryMainTable,$callbackQueryTranslationTable);
     }
 
     public static function urlIsApi(bool $withAjax = true): mixed{

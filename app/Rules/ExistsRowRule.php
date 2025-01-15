@@ -12,9 +12,8 @@ class ExistsRowRule implements Rule
      *
      * @return void
      */
-    public function __construct(private $table,private $key)
+    public function __construct(private $table,private $key,private $callbackQuery = null)
     {
-        //
     }
 
     /**
@@ -26,9 +25,13 @@ class ExistsRowRule implements Rule
      */
     public function passes($attribute, $value)
     {
-        return DB::table($this->table)->where($this->key,$value)
-            ->whereNull("deleted_at")
-            ->exists();
+        $mainQuery = DB::table($this->table)
+            ->where($this->key,$value)
+            ->whereNull("deleted_at");
+        if (!is_null($this->callbackQuery)){
+            $mainQuery = $this->runCallbackQuery($this->callbackQuery,$mainQuery);
+        }
+        return $mainQuery->exists();
     }
 
     /**
@@ -39,5 +42,9 @@ class ExistsRowRule implements Rule
     public function message()
     {
         return 'The selected :attribute is invalid.';
+    }
+
+    private function runCallbackQuery($callbackQuery ,$mainQuery){
+        return $callbackQuery($mainQuery);
     }
 }
