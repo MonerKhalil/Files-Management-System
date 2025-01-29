@@ -13,13 +13,20 @@ use Illuminate\Support\Facades\Hash;
 class UserResetPasswordService
 {
     public function sendForgetPasswordEmail($email){
-        $token = uniqid();
-        DB::table('password_resets')->insert([
-            'email' => $email,
-            'token' => MyApp::Classes()->stringProcess->strEncrypt($token),
-            'created_at' => Carbon::now()
-        ]);
-        MyApp::Classes()->mailProcess->SendMail($email,new ResetPasswordMail($token));
+        try {
+            DB::beginTransaction();
+            $token = uniqid();
+            DB::table('password_resets')->insert([
+                'email' => $email,
+                'token' => MyApp::Classes()->stringProcess->strEncrypt($token),
+                'created_at' => Carbon::now()
+            ]);
+            MyApp::Classes()->mailProcess->SendMail($email,new ResetPasswordMail($token),true);
+            DB::commit();
+        }catch (\Exception $exception){
+            DB::rollBack();
+            throw new MainException($exception->getMessage());
+        }
     }
 
     public function resetPassword($email,$password,$token){

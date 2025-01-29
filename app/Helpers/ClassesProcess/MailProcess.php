@@ -2,6 +2,7 @@
 
 namespace App\Helpers\ClassesProcess;
 
+use App\Exceptions\MainException;
 use App\Helpers\MyApp;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Config;
@@ -10,12 +11,15 @@ use Illuminate\Support\Facades\Mail;
 class MailProcess
 {
 
-    public function SendMail(mixed $emails,Mailable $mailable,$objMailConfig = null){
+    public function SendMail(mixed $emails,Mailable $mailable,bool $withException = false, $objMailConfig = null){
         try {
             $this->setConfigMail($objMailConfig);
             Mail::to($emails)->send($mailable);
         }catch (\Exception $exception){
             //Code Error
+            if ($withException){
+                throw new MainException($exception->getMessage());
+            }
         }
     }
 

@@ -6,17 +6,24 @@ use App\Exceptions\MainException;
 use App\Helpers\MyApp;
 use App\Mail\VerifyUserMail;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\DB;
 
 class UserVerifyService
 {
     public function sendVerifyEmail($user){
-        $token = uniqid();
-        User::where('id', $user->id)->update([
-            "email_verify_token"=>MyApp::Classes()->stringProcess->strEncrypt($token),
-            "email_verify_token_expired_at" => now()->addMinutes(10),
-        ]);
-        MyApp::Classes()->mailProcess->SendMail($user->email,new VerifyUserMail($token));
+        try {
+            DB::beginTransaction();
+            $token = uniqid();
+            User::where('id', $user->id)->update([
+                "email_verify_token"=>MyApp::Classes()->stringProcess->strEncrypt($token),
+                "email_verify_token_expired_at" => now()->addMinutes(10),
+            ]);
+            MyApp::Classes()->mailProcess->SendMail($user->email,new VerifyUserMail($token),true);
+            DB::commit();
+        }catch (\Exception $exception){
+            DB::rollBack();
+            throw new MainException($exception->getMessage());
+        }
     }
 
     public function checkCodeVerifySucceed($user,$code){

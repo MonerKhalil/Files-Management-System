@@ -213,7 +213,7 @@ class BaseRequest extends FormRequest
         return new UniqueRule($table,$column,$id,$callback);
     }
 
-    public function existsRow($table,$column,$callback){
+    public function existsRow($table,$column,$callback = null){
         return new ExistsRowRule($table,$column,$callback);
     }
 
